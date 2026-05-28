@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workstation Admin & Simulator Oprec PMB 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js untuk infografis hasil -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .royal-gradient {
+            background: linear-gradient(135deg, #1e3b8b 0%, #0f172a 100%);
+        }
+        .accent-gradient {
+            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800 flex flex-col">
+
+    <nav class="royal-gradient text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between py-3 md:h-20 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500 text-blue-950 p-2.5 rounded-xl font-black shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-base md:text-lg tracking-tight block leading-tight">UNIVERSITAS ROYAL</span>
+                        <span class="text-xs text-amber-400 font-bold uppercase tracking-wider block">Admin & Quiz Workspace</span>
+                    </div>
+                </div>
+                <!-- Navigation Tabs -->
+                <div class="flex flex-wrap justify-center bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/60 gap-1">
+                    <button id="tab-btn-dashboard" onclick="switchTab('dashboard')" class="px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition-all bg-blue-600 text-white shadow">
+                        <i class="fa-solid fa-chart-line mr-1.5"></i> Dashboard Hasil
+                    </button>
+                    <button id="tab-btn-sim" onclick="switchTab('simulator')" class="px-3.5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all text-gray-300 hover:text-white">
+                        <i class="fa-solid fa-laptop-code mr-1.5"></i> Simulator Tes
+                    </button>
+                    <button id="tab-btn-form" onclick="switchTab('form-creator')" class="px-3.5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all text-gray-300 hover:text-white">
+                        <i class="fa-solid fa-magic mr-1.5"></i> Apps Script Form
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
+
+        <!-- ================= SECTION A: DASHBOARD ADMIN (HASIL LIVE) ================= -->
+        <div id="tab-content-dashboard" class="space-y-6">
+            
+            <!-- Welcome Admin Banner -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="accent-gradient h-2"></div>
+                <div class="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Live Cloud Database Sync</span>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Seleksi Oprec PMB 2026</h1>
+                        <p class="text-gray-500 text-sm md:text-base max-w-2xl leading-relaxed">
+                            Pantau secara langsung hasil pengerjaan kualifikasi calon staf administrasi PMB. Data di bawah ini tersinkronisasi otomatis dengan database cloud.
+                        </p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-cloud"></i>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-bold text-gray-400 uppercase">Database Status</span>
+                            <span id="db-status-badge" class="block text-xs font-bold text-amber-600 mt-0.5">Connecting...</span>
+                            <span id="db-ping-dot" class="inline-block w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase">Total Pelamar</span>
+                        <h3 id="stat-total-applicants" class="text-3xl font-black text-slate-800 mt-1">0</h3>
+                        <span class="text-xs text-blue-600 font-semibold mt-1 inline-block"><i class="fa-solid fa-database"></i> Terkoneksi Cloud</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-lg"><i class="fa-solid fa-user-graduate"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase">Rata-Rata Nilai</span>
+                        <h3 id="stat-avg-score" class="text-3xl font-black text-slate-800 mt-1">0</h3>
+                        <span class="text-xs text-slate-500 mt-1 inline-block">Maksimal: 150 Poin</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-lg"><i class="fa-solid fa-star"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase">Tingkat Lolos</span>
+                        <h3 id="stat-pass-rate" class="text-3xl font-black text-emerald-600 mt-1">0%</h3>
+                        <span class="text-xs text-slate-500 mt-1 inline-block">Passing Grade: 110+</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase">Skor Tertinggi</span>
+                        <h3 id="stat-highest-score" class="text-3xl font-black text-amber-600 mt-1">0</h3>
+                        <span class="text-xs text-slate-500 mt-1 inline-block">Oleh peringkat ke-1</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-lg"><i class="fa-solid fa-trophy"></i></div>
+                </div>
+            </div>
+
+            <!-- Charts and Summary -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Radar / Bar Chart Performa Kategori -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-blue-700"></i> Rata-Rata Kompetensi
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">Gambaran kekuatan pelamar di 6 kategori penilaian.</p>
+                    </div>
+                    <div class="my-6 aspect-square w-full max-w-[280px] mx-auto flex items-center justify-center">
+                        <canvas id="dashboardRadarChart"></canvas>
+                    </div>
+                    <div class="text-center text-xs text-slate-400 font-semibold">
+                        Sistem terupdate secara otomatis berdasarkan database cloud.
+                    </div>
+                </div>
+
+                <!-- Table Daftar Peserta -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-lg">Daftar Pelamar Masuk</h3>
+                            <p class="text-xs text-gray-500 mt-1">Menampilkan biodata dan hasil ujian pengerjaan simulator.</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <div class="relative flex-grow sm:flex-grow-0">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </span>
+                                <input type="text" id="table-search" oninput="renderApplicantsTable()" placeholder="Cari nama/NIM/Prodi..." class="w-full sm:w-48 pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Responsive Table Wrapper -->
+                    <div class="overflow-x-auto flex-grow custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-50 text-slate-400 font-bold text-xs uppercase border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Nama Pelamar</th>
+                                    <th class="px-6 py-4">Jurusan & NIM</th>
+                                    <th class="px-6 py-4 text-center">Skor</th>
+                                    <th class="px-6 py-4 text-center">Rekomendasi</th>
+                                    <th class="px-6 py-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicant-table-rows" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Generated dynamically via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Modal (Akan Tampil Jika Klik Aksi) -->
+            <div id="detail-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-100 flex flex-col">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-folder-open text-blue-800 mr-2"></i>Detail Lembar Jawaban</h3>
+                        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 transition-all text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="p-6 space-y-6 flex-grow" id="detail-modal-body">
+                        <!-- Dynamic data injected here -->
+                    </div>
+                    <div class="p-4 bg-slate-50 border-t border-slate-150 flex justify-end">
+                        <button onclick="closeDetailModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-2 rounded-xl text-sm transition-all">Tutup Detail</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= SECTION B: LIVE SIMULATOR TEST ================= -->
+        <div id="tab-content-simulator" class="hidden space-y-6">
+            
+            <!-- Welcome Screen Simulator -->
+            <div id="sim-welcome" class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-200">
+                <div class="accent-gradient h-3"></div>
+                <div class="p-8 text-center space-y-6">
+                    <div class="w-20 h-20 bg-blue-50 text-blue-700 rounded-full flex items-center justify-center mx-auto shadow-md">
+                        <i class="fa-solid fa-laptop-code text-3xl"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-blue-950">Simulator Ujian Online PMB</h2>
+                        <p class="text-gray-500 max-w-lg mx-auto text-sm md:text-base">
+                            Simulasi pengerjaan ujian kualifikasi calon staf PMB Royal. Gunakan simulasi ini untuk menguji kelayakan dan kualitas soal sebelum dipublikasi.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto pt-4 text-left">
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-150">
+                            <span class="block text-xs text-gray-400 font-bold uppercase">Batas Waktu</span>
+                            <span class="font-extrabold text-slate-800 text-sm">15 Menit</span>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-150">
+                            <span class="block text-xs text-gray-400 font-bold uppercase">Jumlah Soal</span>
+                            <span class="font-extrabold text-slate-800 text-sm">30 Soal</span>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-150">
+                            <span class="block text-xs text-gray-400 font-bold uppercase">Nilai Maksimal</span>
+                            <span class="font-extrabold text-slate-800 text-sm">150 Poin</span>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-150">
+                            <span class="block text-xs text-gray-400 font-bold uppercase">Passing Grade</span>
+                            <span class="font-extrabold text-green-600 text-sm">110 Poin</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button onclick="startSimulator()" class="bg-blue-900 hover:bg-blue-800 active:scale-95 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all text-sm tracking-wide">
+                            Mulai Simulasi Ujian <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Test Section -->
+            <div id="sim-active" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Pane: Info, Timer, and Progress -->
+                <div class="space-y-4">
+                    <!-- Progress Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 sticky top-24">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">WAKTU TERSISA</span>
+                            <span id="quiz-timer" class="text-lg font-black text-red-600 flex items-center gap-1.5 bg-red-50 px-3 py-1 rounded-lg">
+                                <i class="fa-solid fa-stopwatch animate-pulse"></i> 15:00
+                            </span>
+                        </div>
+
+                        <hr class="border-gray-100">
+
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-bold text-gray-500">
+                                <span id="sim-step-label">Langkah 1 dari 7: Identitas Diri</span>
+                                <span id="sim-step-percentage">14%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                                <div id="sim-progress-bar" class="bg-blue-700 h-full transition-all duration-300" style="width: 14%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Question Navigation Grid -->
+                        <div class="pt-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Navigasi Soal</span>
+                            <div class="grid grid-cols-6 gap-1.5" id="mini-nav-grid">
+                                <!-- Generated Dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Interactive Form & Question Display -->
+                <div class="lg:col-span-2 space-y-6">
+                    <form id="simForm" onsubmit="event.preventDefault();" class="space-y-6">
+                        <!-- SECTION 0: BIODATA -->
+                        <div id="sim-section-0" class="sim-section-block bg-white rounded-2xl shadow-md p-6 md:p-8 space-y-6">
+                            <div class="border-b border-gray-100 pb-4">
+                                <h2 class="text-xl font-bold text-gray-800">Bagian 1: Identitas Diri Pelamar</h2>
+                                <p class="text-gray-500 text-sm mt-1">Harap isi data diri Anda dengan benar sebelum memulai ujian kompetensi.</p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                                    <input type="text" id="sim-bio-nama" required placeholder="Masukkan nama lengkap sesuai KTP/KTM" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor WhatsApp / Kontak <span class="text-red-500">*</span></label>
+                                    <input type="tel" id="sim-bio-kontak" required placeholder="Contoh: 081234567890" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <!-- PROGRAM STUDI DROPDOWN -->
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Program Studi / Jurusan <span class="text-red-500">*</span></label>
+                                        <select id="sim-bio-prodi" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white text-gray-700">
+                                            <option value="" disabled selected>Pilih Program Studi</option>
+                                            <option value="Sistem Informasi">Sistem Informasi</option>
+                                            <option value="Sistem Komputer">Sistem Komputer</option>
+                                            <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
+                                            <option value="Manajemen">Manajemen</option>
+                                            <option value="Hukum">Hukum</option>
+                                            <option value="Pendidikan Matematika">Pendidikan Matematika</option>
+                                            <option value="Pendidikan Biologi">Pendidikan Biologi</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Angkatan / NIM <span class="text-red-500">*</span></label>
+                                        <input type="text" id="sim-bio-nim" required placeholder="Contoh: 2024 / NIM Anda" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Mengapa Anda Tertarik Bergabung Sebagai Staf PMB? <span class="text-red-500">*</span></label>
+                                    <textarea id="sim-bio-motivasi" required rows="4" placeholder="Jelaskan motivasi dan komitmen Anda secara singkat..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QUESTION SECTIONS WILL BE INJECTED HERE VIA JS -->
+                        <div id="sim-questions-holder"></div>
+
+                        <!-- NAVIGATION BUTTONS -->
+                        <div class="flex items-center justify-between gap-4 mt-6">
+                            <button type="button" id="simPrevBtn" onclick="navigateSimStep(-1)" class="hidden px-6 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-arrow-left mr-2"></i> Kembali
+                            </button>
+                            <div class="flex-grow"></div>
+                            <button type="button" id="simNextBtn" onclick="navigateSimStep(1)" class="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2">
+                                Lanjutkan <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RESULTS CONTAINER (HIDDEN UNTIL SUBMITTED) -->
+            <div id="sim-results-panel" class="hidden bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-150">
+                <!-- Header Hasil -->
+                <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-8 text-white text-center">
+                    <div class="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <i class="fa-solid fa-award text-3xl text-blue-950 animate-bounce"></i>
+                    </div>
+                    <h2 class="text-2xl font-black tracking-tight">Pengerjaan Selesai!</h2>
+                    <p class="text-blue-200 text-sm mt-1">Hasil Ujian Seleksi Administrasi PMB Royal 2026</p>
+                    
+                    <div class="mt-6 inline-block bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20">
+                        <span class="block text-xs uppercase tracking-widest text-blue-200">Total Skor Diperoleh</span>
+                        <span id="sim-final-score" class="text-5xl font-black text-amber-400">0</span>
+                        <span class="text-lg font-bold text-white">/ 150 Poin</span>
+                    </div>
+                </div>
+
+                <!-- Detail Peserta -->
+                <div class="p-6 md:p-8 bg-gray-50 border-b border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Biodata Pelamar</h3>
+                        <div class="mt-2 space-y-1.5 text-sm text-gray-700">
+                            <p><span class="font-bold text-gray-500 w-24 inline-block">Nama:</span> <span id="sim-res-nama" class="font-semibold">-</span></p>
+                            <p><span class="font-bold text-gray-500 w-24 inline-block">WhatsApp:</span> <span id="sim-res-kontak" class="font-semibold">-</span></p>
+                            <p><span class="font-bold text-gray-500 w-24 inline-block">Prodi/NIM:</span> <span id="sim-res-prodi" class="font-semibold">-</span> (<span id="sim-res-nim">-</span>)</p>
+                        </div>
+                    </div>
+                    <div class="md:border-l md:pl-6 flex flex-col justify-center">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status Kelulusan</h3>
+                        <div>
+                            <span id="sim-res-badge" class="inline-block px-4 py-2 rounded-xl text-sm font-extrabold shadow-sm"></span>
+                            <p id="sim-res-text" class="text-xs text-gray-500 mt-2 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analisis Per Kategori + Visual Chart -->
+                <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Chart Radar -->
+                    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <h4 class="text-sm font-bold text-gray-700 mb-4 text-center">Radar Kemampuan</h4>
+                        <div class="w-full max-w-[250px] aspect-square flex items-center justify-center">
+                            <canvas id="scoreChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Progress bar per bab diisi via Javascript -->
+                    <div class="md:col-span-2 space-y-4 flex flex-col justify-center">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-blue-800"></i> Analisis Kompetensi Anda
+                        </h3>
+                        <div id="sim-category-bars" class="space-y-3.5">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="p-6 md:p-8 flex flex-col sm:flex-row gap-3 bg-gray-50 border-t border-gray-150">
+                    <button onclick="copyRekapToClipboard()" class="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl shadow transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
+                        <i class="fa-solid fa-clipboard-check"></i> Salin Rekap Data Admin
+                    </button>
+                    <button onclick="switchTab('dashboard')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-circle-check"></i> Masuk Dashboard Hasil
+                    </button>
+                    <button onclick="resetSimulator()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3.5 px-6 rounded-xl transition-all text-sm">
+                        Coba Lagi
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= SECTION C: GOOGLE FORM GENERATOR ================= -->
+        <div id="tab-content-form-creator" class="hidden space-y-6">
+            <!-- Header Penjelasan GAS -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="accent-gradient h-2"></div>
+                <div class="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Pembuat Otomatis</span>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Sihir Google Apps Script (GAS)</h1>
+                        <p class="text-gray-500 text-sm md:text-base max-w-2xl leading-relaxed">
+                            Jangan lelah menyalin 30 pertanyaan satu per satu! Gunakan kode otomatis di bawah ini. Anda hanya perlu menempelkan kode ini ke editor Google, klik tombol "Jalankan", dan Google Form Anda akan langsung jadi lengkap beserta dropdown prodi, kunci jawaban dan skornya!
+                        </p>
+                    </div>
+                    <div class="bg-amber-50/50 border border-amber-200 p-4 rounded-xl text-center min-w-[200px]">
+                        <span class="block text-xs font-bold text-amber-700 uppercase tracking-wider">Total Efisiensi Waktu</span>
+                        <span class="block text-3xl font-black text-slate-800 mt-1">~30 Menit</span>
+                        <span class="inline-block bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded-full mt-2">Menjadi 10 Detik saja!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial Langkah-Langkah -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-150 flex gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700 font-bold shrink-0">1</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Salin Kode</h4>
+                        <p class="text-xs text-gray-500 mt-1">Klik tombol <b>Salin Script</b> di pojok kanan bawah kotak kode di bawah.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-150 flex gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700 font-bold shrink-0">2</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Buka Apps Script</h4>
+                        <p class="text-xs text-gray-500 mt-1">Buka <a href="https://script.google.com" target="_blank" class="text-blue-600 underline font-semibold">script.google.com</a>, masuk dengan akun Google Anda, klik <b>New Project</b>.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-150 flex gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700 font-bold shrink-0">3</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Paste & Simpan</h4>
+                        <p class="text-xs text-gray-500 mt-1">Hapus semua teks bawaan, lalu paste (Ctrl+V) kode script tadi. Klik tombol simpan (ikon disket).</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-150 flex gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700 font-bold shrink-0">4</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Jalankan Ujian!</h4>
+                        <p class="text-xs text-gray-500 mt-1">Klik tombol <b>▷ Run</b> (Jalankan) di bagian atas. Cek Google Drive Anda, formulir sudah selesai!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Script Code Container -->
+            <div class="bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-800 flex flex-col">
+                <div class="bg-slate-950 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                        <span class="text-slate-400 text-xs font-semibold ml-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-code"></i> google_form_builder.js
+                        </span>
+                    </div>
+                    <button onclick="copyAppsScript()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center gap-2 transition-all">
+                        <i id="copy-icon" class="fa-solid fa-copy"></i> <span id="copy-text">Salin Script</span>
+                    </button>
+                </div>
+                <div class="p-4 bg-slate-900 overflow-x-auto">
+                    <pre class="text-slate-300 text-xs md:text-sm font-mono leading-relaxed max-h-[450px] overflow-y-auto custom-scrollbar" id="apps-script-box">
+function createPMBForm() {
+  // 1. Membuat Google Form Baru
+  var form = FormApp.create('Ujian Seleksi Oprec PMB Universitas Royal 2026');
+  
+  form.setDescription('Formulir Seleksi Online Calon Staf Administrasi PMB Universitas Royal 2026.\n\nPetunjuk Pengerjaan:\n- Jawab seluruh pertanyaan dengan teliti.\n- Setiap jawaban yang benar bernilai 5 poin.\n- Total nilai maksimal: 150 poin.');
+  form.setIsQuiz(true); // Aktifkan kuis penilaian otomatis
+  form.setCollectEmail(false);
+  form.setLimitOneResponsePerUser(true); // Membatasi pengerjaan 1 kali
+
+  // 2. BAGIAN 1: IDENTITAS DIRI PELAMAR (Halaman Utama)
+  var section1 = form.addSectionHeaderItem();
+  section1.setTitle('Bagian 1: Identitas Diri Pelamar');
+  section1.setDescription('Harap isi data diri Anda dengan benar sebelum memulai ujian kompetensi.');
+
+  form.addTextItem().setTitle('Nama Lengkap').setRequired(true);
+  form.addTextItem().setTitle('Nomor WhatsApp / Kontak').setRequired(true);
+  
+  // Menambahkan Dropdown Prodi Sesuai Permintaan
+  var prodiItem = form.addListItem();
+  prodiItem.setTitle('Program Studi / Jurusan').setRequired(true);
+  prodiItem.setChoiceValues([
+    'Sistem Informasi',
+    'Sistem Komputer',
+    'Rekayasa Perangkat Lunak',
+    'Manajemen',
+    'Hukum',
+    'Pendidikan Matematika',
+    'Pendidikan Biologi'
+  ]);
+
+  form.addTextItem().setTitle('Angkatan / NIM').setRequired(true);
+  form.addParagraphTextItem().setTitle('Mengapa Anda Tertarik Bergabung Sebagai Staf PMB?').setRequired(true);
+
+  // DATA SOAL (Kategori A s.d F)
+  var quizData = [
+    {
+      category: "Komunikasi & Public Speaking",
+      questions: [
+        { q: "Saat berbicara dengan calon mahasiswa, sikap yang paling tepat adalah…", opt: ["Cuek", "Ramah dan profesional", "Emosional", "Terlalu santai"], ans: "Ramah dan profesional" },
+        { q: "Tujuan utama public speaking dalam promosi kampus adalah…", opt: ["Menakut-nakuti audience", "Menarik perhatian dan menyampaikan informasi", "Membuat suasana tegang", "Menghafal teks saja"], ans: "Menarik perhatian dan menyampaikan informasi" },
+        { q: "Ketika presentasi di sekolah, hal yang harus diperhatikan adalah…", opt: ["Intonasi dan percaya diri", "Bermain HP", "Berbicara terlalu cepat", "Membelakangi audience"], ans: "Intonasi dan percaya diri" },
+        { q: "Jika calon mahasiswa bertanya sesuatu yang belum diketahui, maka sebaiknya…", opt: ["Menjawab asal-asalan", "Mengabaikan", "Mengatakan akan mencari informasi terlebih dahulu", "Mengalihkan pembicaraan"], ans: "Mengatakan akan mencari informasi terlebih dahulu" },
+        { q: "Bahasa yang baik untuk membalas chat calon mahasiswa adalah…", opt: ["Kasar", "Formal dan sopan", "Singkatan berlebihan", "Huruf kapital semua"], ans: "Formal dan sopan" }
+      ]
+    },
+    {
+      category: "Teamwork & Attitude",
+      questions: [
+        { q: "Dalam kerja tim, sikap yang paling penting adalah…", opt: ["Egois", "Komunikatif", "Pasif", "Kompetitif berlebihan"], ans: "Komunikatif" },
+        { q: "Jika ada anggota tim yang kesulitan, maka sebaiknya…", opt: ["Dibiarkan", "Dibantu dan diajak koordinasi", "Diejek", "Dilaporkan tanpa solusi"], ans: "Dibantu dan diajak koordinasi" },
+        { q: "Contoh sikap disiplin adalah…", opt: ["Datang terlambat", "Menunda pekerjaan", "Tepat waktu", "Menghilang saat tugas"], ans: "Tepat waktu" },
+        { q: "Ketika mendapat kritik dari atasan, sikap terbaik adalah…", opt: ["Marah", "Membantah", "Menerima dan memperbaiki diri", "Menghindar"], ans: "Menerima dan memperbaiki diri" },
+        { q: "Dalam organisasi, loyalitas berarti…", opt: ["Hanya aktif saat diawasi", "Bertanggung jawab terhadap tugas", "Mencari perhatian", "Menghindari pekerjaan"], ans: "Bertanggung jawab terhadap tugas" }
+      ]
+    },
+    {
+      category: "Media Sosial & Promosi",
+      questions: [
+        { q: "Platform media sosial yang paling efektif untuk promosi Gen Z adalah…", opt: ["TikTok dan Instagram", "SMS", "Fax", "Yahoo Messenger"], ans: "TikTok dan Instagram" },
+        { q: "Tujuan utama konten promosi kampus adalah…", opt: ["Membingungkan audience", "Menarik minat calon mahasiswa", "Membuat konten panjang", "Meniru kampus lain"], ans: "Menarik minat calon mahasiswa" },
+        { q: "Copywriting yang baik harus…", opt: ["Membosankan", "Singkat dan menarik", "Terlalu panjang", "Sulit dipahami"], ans: "Singkat dan menarik" },
+        { q: "Konten media sosial yang baik adalah…", opt: ["Tidak jelas", "Kreatif dan informatif", "Berisi hoaks", "Hanya teks panjang"], ans: "Kreatif dan informatif" },
+        { q: "Admin media sosial kampus harus menjaga…", opt: ["Emosi pribadi", "Popularitas pribadi", "Citra institusi", "Privasi teman"], ans: "Citra institusi" }
+      ]
+    },
+    {
+      category: "Administrasi & Data",
+      questions: [
+        { q: "Fungsi utama Microsoft Excel dalam PMB adalah…", opt: ["Edit video", "Mendesain logo", "Mengolah data", "Membuat animasi"], ans: "Mengolah data" },
+        { q: "Google Sheets memiliki keunggulan yaitu…", opt: ["Tidak bisa online", "Bisa digunakan bersama secara realtime", "Tidak dapat dibagikan", "Hanya bisa offline"], ans: "Bisa digunakan bersama secara realtime" },
+        { q: "Data calon mahasiswa harus disimpan secara…", opt: ["Acak", "Tidak beraturan", "Sistematis dan rapi", "Dicampur semua"], ans: "Sistematis dan rapi" },
+        { q: "Kesalahan input data dapat menyebabkan…", opt: ["Informasi tidak akurat", "Sistem lebih cepat", "Data lebih menarik", "Promosi meningkat"], ans: "Informasi tidak akurat" },
+        { q: "Tujuan database calon mahasiswa adalah…", opt: ["Menyulitkan pencarian data", "Mempermudah pengelolaan informasi", "Menghapus data", "Menyimpan file pribadi"], ans: "Mempermudah pengelolaan informasi" }
+      ]
+    },
+    {
+      category: "Problem Solving & Logika Kerja",
+      questions: [
+        { q: "Jika terjadi miskomunikasi dalam tim, maka langkah terbaik adalah…", opt: ["Menyalahkan anggota lain", "Diam saja", "Klarifikasi dan diskusi", "Keluar dari grup"], ans: "Klarifikasi dan diskusi" },
+        { q: "Saat menghadapi banyak tugas sekaligus, maka sebaiknya…", opt: ["Panik", "Menghindar", "Membuat prioritas pekerjaan", "Menunggu disuruh"], ans: "Membuat prioritas pekerjaan" },
+        { q: "Jika internet kantor bermasalah saat upload data penting, maka…", opt: ["Membatalkan pekerjaan", "Mencari alternatif koneksi", "Pulang", "Menunda tanpa laporan"], ans: "Mencari alternatif koneksi" },
+        { q: "Problem solving yang baik adalah…", opt: ["Menghindari masalah", "Menyelesaikan masalah dengan solusi tepat", "Menunggu orang lain", "Menyalahkan keadaan"], ans: "Menyelesaikan masalah dengan solusi tepat" },
+        { q: "Ketika target promosi belum tercapai, maka yang perlu dilakukan adalah…", opt: ["Menyerah", "Evaluasi strategi promosi", "Menyalahkan tim", "Menghapus laporan"], ans: "Evaluasi strategi promosi" }
+      ]
+    },
+    {
+      category: "Teknologi & Digital Skill",
+      questions: [
+        { q: "Python pada jobdesk PMB digunakan untuk…", opt: ["Bermain game", "Pengolahan data", "Mendesain poster", "Membuat musik"], ans: "Pengolahan data" },
+        { q: "Kemampuan digital yang penting untuk tim PMB adalah…", opt: ["Mengedit data dan media sosial", "Bermain game online", "Menonton film", "Menghafal lagu viral"], ans: "Mengedit data dan media sosial" },
+        { q: "Canva biasanya digunakan untuk…", opt: ["Pengolahan database", "Desain konten promosi", "Coding website", "Membuat antivirus"], ans: "Desain konten promosi" },
+        { q: "Tujuan analisis data calon mahasiswa adalah…", opt: ["Mengetahui strategi promosi yang efektif", "Menghapus data lama", "Membuat data lebih banyak", "Mengurangi pendaftar"], ans: "Mengetahui strategi promosi yang efektif" },
+        { q: "Alasan terbaik mengikuti Open Recruitment PMB adalah…", opt: ["Ikut teman", "Mengisi waktu kosong", "Menambah pengalaman dan skill kerja", "Ingin terkenal"], ans: "Menambah pengalaman dan skill kerja" }
+      ]
+    }
+  ];
+
+  // 3. GENERATE SECTION DAN SOAL SECARA OTOMATIS
+  for (var s = 0; s < quizData.length; s++) {
+    var catObj = quizData[s];
+    // Tambah Section Halaman Baru di Google Form
+    var pageBreak = form.addPageBreakItem();
+    pageBreak.setTitle('Kategori ' + (s+1) + ': ' + catObj.category);
+    pageBreak.setDescription('Silakan pilih jawaban yang paling tepat pada bagian kompetensi ' + catObj.category);
+
+    var questionsList = catObj.questions;
+    for (var q = 0; q < questionsList.length; q++) {
+      var qData = questionsList[q];
+      var mcItem = form.addMultipleChoiceItem();
+      mcItem.setTitle(qData.q);
+      
+      // Susun opsi pilihan berganda beserta kunci dan poinnya
+      var choices = [];
+      for (var o = 0; o < qData.opt.length; o++) {
+        var optionText = qData.opt[o];
+        var isCorrect = (optionText === qData.ans);
+        choices.push(mcItem.createChoice(optionText, isCorrect));
+      }
+      mcItem.setChoices(choices);
+      mcItem.setPoints(5); // Setiap soal berbobot 5 Poin
+      mcItem.setRequired(true); // Wajib diisi peserta
+    }
+  }
+
+  Logger.log('SUKSES! Google Form berhasil dibuat.');
+  Logger.log('Tautan edit form: ' + form.getEditUrl());
+  Logger.log('Tautan kirim form: ' + form.getPublishedUrl());
+}
+</pre>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-xs font-semibold">Workspace Sistem Administrasi PMB Universitas Royal 2026.</p>
+            <p class="text-[10px] text-slate-500">Silakan gunakan tab di atas untuk menguji simulator atau mengelola database administrasi.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK Modules & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase state
+        let auth, db, user;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'oprec-pmb-2026';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+        // Shared Local State Variables
+        const quizData = [
+            // A. Komunikasi & Public Speaking
+            { id: 1, cat: "Komunikasi & Public Speaking", q: "Saat berbicara dengan calon mahasiswa, sikap yang paling tepat adalah…", options: ["Cuek", "Ramah dan profesional", "Emosional", "Terlalu santai"], ans: 1 },
+            { id: 2, cat: "Komunikasi & Public Speaking", q: "Tujuan utama public speaking dalam promosi kampus adalah…", options: ["Menakut-nakuti audience", "Menarik perhatian dan menyampaikan informasi", "Membuat suasana tegang", "Menghafal teks saja"], ans: 1 },
+            { id: 3, cat: "Komunikasi & Public Speaking", q: "Ketika presentasi di sekolah, hal yang harus diperhatikan adalah…", options: ["Intonasi dan percaya diri", "Bermain HP", "Berbicara terlalu cepat", "Membelakangi audience"], ans: 0 },
+            { id: 4, cat: "Komunikasi & Public Speaking", q: "Jika calon mahasiswa bertanya sesuatu yang belum diketahui, maka sebaiknya…", options: ["Menjawab asal-asalan", "Mengabaikan", "Mengatakan akan mencari informasi terlebih dahulu", "Mengalihkan pembicaraan"], ans: 2 },
+            { id: 5, cat: "Komunikasi & Public Speaking", q: "Bahasa yang baik untuk membalas chat calon mahasiswa adalah…", options: ["Kasar", "Formal dan sopan", "Singkatan berlebihan", "Huruf kapital semua"], ans: 1 },
+            
+            // B. Teamwork & Attitude
+            { id: 6, cat: "Teamwork & Attitude", q: "Dalam kerja tim, sikap yang paling penting adalah…", options: ["Egois", "Komunikatif", "Pasif", "Kompetitif berlebihan"], ans: 1 },
+            { id: 7, cat: "Teamwork & Attitude", q: "Jika ada anggota tim yang kesulitan, maka sebaiknya…", options: ["Dibiarkan", "Dibantu dan diajak koordinasi", "Diejek", "Dilaporkan tanpa solusi"], ans: 1 },
+            { id: 8, cat: "Teamwork & Attitude", q: "Contoh sikap disiplin adalah…", options: ["Datang terlambat", "Menunda pekerjaan", "Tepat waktu", "Menghilang saat tugas"], ans: 2 },
+            { id: 9, cat: "Teamwork & Attitude", q: "Ketika mendapat kritik dari atasan, sikap terbaik adalah…", options: ["Marah", "Membantah", "Menerima dan memperbaiki diri", "Menghindar"], ans: 2 },
+            { id: 10, cat: "Teamwork & Attitude", q: "Dalam organisasi, loyalitas berarti…", options: ["Hanya aktif saat diawasi", "Bertanggung jawab terhadap tugas", "Mencari perhatian", "Menghindari pekerjaan"], ans: 1 },
+
+            // C. Media Sosial & Promosi
+            { id: 11, cat: "Media Sosial & Promosi", q: "Platform media sosial yang paling efektif untuk promosi Gen Z adalah…", options: ["TikTok dan Instagram", "SMS", "Fax", "Yahoo Messenger"], ans: 0 },
+            { id: 12, cat: "Media Sosial & Promosi", q: "Tujuan utama konten promosi kampus adalah…", options: ["Membingungkan audience", "Menarik minat calon mahasiswa", "Membuat konten panjang", "Meniru kampus lain"], ans: 1 },
+            { id: 13, cat: "Media Sosial & Promosi", q: "Copywriting yang baik harus…", options: ["Membosankan", "Singkat dan menarik", "Terlalu panjang", "Sulit dipahami"], ans: 1 },
+            { id: 14, cat: "Media Sosial & Promosi", q: "Konten media sosial yang baik adalah…", options: ["Tidak jelas", "Kreatif dan informatif", "Berisi hoaks", "Hanya teks panjang"], ans: 1 },
+            { id: 15, cat: "Media Sosial & Promosi", q: "Admin media sosial kampus harus menjaga…", options: ["Emosi pribadi", "Popularitas pribadi", "Citra institusi", "Privasi teman"], ans: 2 },
+
+            // D. Administrasi & Data
+            { id: 16, cat: "Administrasi & Data", q: "Fungsi utama Microsoft Excel dalam PMB adalah…", options: ["Edit video", "Mendesain logo", "Mengolah data", "Membuat animasi"], ans: 2 },
+            { id: 17, cat: "Administrasi & Data", q: "Google Sheets memiliki keunggulan yaitu…", options: ["Tidak bisa online", "Bisa digunakan bersama secara realtime", "Tidak dapat dibagikan", "Hanya bisa offline"], ans: 1 },
+            { id: 18, cat: "Administrasi & Data", q: "Data calon mahasiswa harus disimpan secara…", options: ["Acak", "Tidak beraturan", "Sistematis dan rapi", "Dicampur semua"], ans: 2 },
+            { id: 19, cat: "Administrasi & Data", q: "Kesalahan input data dapat menyebabkan…", options: ["Informasi tidak akurat", "Sistem lebih cepat", "Data lebih menarik", "Promosi meningkat"], ans: 0 },
+            { id: 20, cat: "Administrasi & Data", q: "Tujuan database calon mahasiswa adalah…", options: ["Menyulitkan pencarian data", "Mempermudah pengelolaan informasi", "Menghapus data", "Menyimpan file pribadi"], ans: 1 },
+
+            // E. Problem Solving & Logika Kerja
+            { id: 21, cat: "Problem Solving & Logika Kerja", q: "Jika terjadi miskomunikasi dalam tim, maka langkah terbaik adalah…", options: ["Menyalahkan anggota lain", "Diam saja", "Klarifikasi dan diskusi", "Keluar dari grup"], ans: 2 },
+            { id: 22, cat: "Problem Solving & Logika Kerja", q: "Saat menghadapi banyak tugas sekaligus, maka sebaiknya…", options: ["Panik", "Menghindar", "Membuat prioritas pekerjaan", "Menunggu disuruh"], ans: 2 },
+            { id: 23, cat: "Problem Solving & Logika Kerja", q: "Jika internet kantor bermasalah saat upload data penting, maka…", options: ["Membatalkan pekerjaan", "Mencari alternatif koneksi", "Pulang", "Menunda tanpa laporan"], ans: 1 },
+            { id: 24, cat: "Problem Solving & Logika Kerja", q: "Problem solving yang baik adalah…", options: ["Menghindari masalah", "Menyelesaikan masalah dengan solusi tepat", "Menunggu orang lain", "Menyalahkan keadaan"], ans: 1 },
+            { id: 25, cat: "Problem Solving & Logika Kerja", q: "Ketika target promosi belum tercapai, maka yang perlu dilakukan adalah…", options: ["Menyerah", "Evaluasi strategi promosi", "Menyalahkan tim", "Menghapus laporan"], ans: 1 },
+
+            // F. Teknologi & Digital Skill
+            { id: 26, cat: "Teknologi & Digital Skill", q: "Python pada jobdesk PMB digunakan untuk…", options: ["Bermain game", "Pengolahan data", "Mendesain poster", "Membuat musik"], ans: 1 },
+            { id: 27, cat: "Teknologi & Digital Skill", q: "Kemampuan digital yang penting untuk tim PMB adalah…", options: ["Mengedit data dan media sosial", "Bermain game online", "Menonton film", "Menghafal lagu viral"], ans: 0 },
+            { id: 28, cat: "Teknologi & Digital Skill", q: "Canva biasanya digunakan untuk…", options: ["Pengolahan database", "Desain konten promosi", "Coding website", "Membuat antivirus"], ans: 1 },
+            { id: 29, cat: "Teknologi & Digital Skill", q: "Tujuan analisis data calon mahasiswa adalah…", options: ["Mengetahui strategi promosi yang efektif", "Menghapus data lama", "Membuat data lebih banyak", "Mengurangi pendaftar"], ans: 0 },
+            { id: 30, cat: "Teknologi & Digital Skill", q: "Alasan terbaik mengikuti Open Recruitment PMB adalah…", options: ["Ikut teman", "Mengisi waktu kosong", "Menambah pengalaman dan skill kerja", "Ingin terkenal"], ans: 2 }
+        ];
+
+        const categories = [
+            "Biodata Diri",
+            "Komunikasi & Public Speaking",
+            "Teamwork & Attitude",
+            "Media Sosial & Promosi",
+            "Administrasi & Data",
+            "Problem Solving & Logika Kerja",
+            "Teknologi & Digital Skill"
+        ];
+
+        let applicantsList = [];
+        let currentSimStep = 0;
+        const totalSimSteps = 7;
+        let timerInterval = null;
+        let secondsLeft = 900; // 15 Menit
+        let radarChartInstance = null;
+        let dashboardChartInstance = null;
+        let activeUserResults = {};
+
+        // 1. Inisialisasi Firebase & Autentikasi sesuai Aturan 3
+        async function initFirebase() {
+            const dbStatusBadge = document.getElementById("db-status-badge");
+            const dbPingDot = document.getElementById("db-ping-dot");
+
+            if (!firebaseConfig) {
+                console.warn("Firebase configuration not found. Running in offline/memory mode.");
+                dbStatusBadge.textContent = "Offline Mode";
+                dbStatusBadge.className = "block text-xs font-bold text-gray-500 mt-0.5";
+                dbPingDot.className = "inline-block w-2.5 h-2.5 bg-gray-400 rounded-full mt-1";
+                loadOfflineDefaultData();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Autentikasi sebelum query (Aturan Mandatori 3)
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                user = auth.currentUser;
+                console.log("Firebase Authenticated! User ID:", user.uid);
+                
+                dbStatusBadge.textContent = "Online & Synced";
+                dbStatusBadge.className = "block text-xs font-bold text-emerald-600 mt-0.5";
+                dbPingDot.className = "inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-ping mt-1";
+
+                // Setup realtime database listener
+                setupFirestoreSync();
+            } catch (error) {
+                console.error("Firebase auth/conn error:", error);
+                dbStatusBadge.textContent = "Connection Failed";
+                dbStatusBadge.className = "block text-xs font-bold text-red-600 mt-0.5";
+                dbPingDot.className = "inline-block w-2.5 h-2.5 bg-red-500 rounded-full mt-1";
+                loadOfflineDefaultData();
+            }
+        }
+
+        // 2. Real-time Firestore Sync (Aturan 1: /artifacts/{appId}/public/data/applicants)
+        function setupFirestoreSync() {
+            const collectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'applicants');
+            
+            // Menggunakan onSnapshot untuk sinkronisasi live
+            onSnapshot(collectionPath, (snapshot) => {
+                const loadedApplicants = [];
+                snapshot.forEach((doc) => {
+                    loadedApplicants.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (loadedApplicants.length === 0) {
+                    // Jika database cloud baru dibuat/kosong, isi otomatis dengan data sampel awal
+                    seedInitialCloudDatabase();
+                } else {
+                    // Sort berdasarkan timestamp pendaftaran (Urutan terbaru di atas)
+                    applicantsList = loadedApplicants.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    calculateDashboardStats();
+                    renderDashboardRadar();
+                    renderApplicantsTable();
+                }
+            }, (error) => {
+                console.error("Firestore loading error:", error);
+                showToast("Gagal mengambil data dari database cloud.", "error");
+            });
+        }
+
+        // 3. Menanamkan data default awal jika Cloud Database kosong
+        async function seedInitialCloudDatabase() {
+            const defaultSample = [
+                { 
+                    nama: "Farhan Mahendra", 
+                    kontak: "081288223311", 
+                    prodi: "Sistem Informasi", 
+                    nim: "2024081012", 
+                    motivasi: "Ingin berkontribusi dalam mempercepat proses administrasi pendaftaran mahasiswa baru berbasis digital.",
+                    skorTotal: 135,
+                    perKategori: {
+                        "Komunikasi & Public Speaking": 25,
+                        "Teamwork & Attitude": 20,
+                        "Media Sosial & Promosi": 20,
+                        "Administrasi & Data": 25,
+                        "Problem Solving & Logika Kerja": 20,
+                        "Teknologi & Digital Skill": 25
+                    },
+                    rekomendasi: "SANGAT DIREKOMENDASIKAN",
+                    timestamp: Date.now() - 7200000
+                },
+                { 
+                    nama: "Siti Nurhaliza", 
+                    kontak: "081900112233", 
+                    prodi: "Hukum", 
+                    nim: "2023032045", 
+                    motivasi: "Meningkatkan kemampuan public speaking saya melalui interaksi langsung dengan calon mahasiswa baru.",
+                    skorTotal: 120,
+                    perKategori: {
+                        "Komunikasi & Public Speaking": 25,
+                        "Teamwork & Attitude": 25,
+                        "Media Sosial & Promosi": 20,
+                        "Administrasi & Data": 15,
+                        "Problem Solving & Logika Kerja": 15,
+                        "Teknologi & Digital Skill": 20
+                    },
+                    rekomendasi: "SANGAT DIREKOMENDASIKAN",
+                    timestamp: Date.now() - 3600000
+                },
+                { 
+                    nama: "Bimo Wicaksono", 
+                    kontak: "087755331122", 
+                    prodi: "Sistem Komputer", 
+                    nim: "2024011089", 
+                    motivasi: "Saya ingin membantu integrasi pengelolaan data PMB agar lebih aman dan efisien.",
+                    skorTotal: 95,
+                    perKategori: {
+                        "Komunikasi & Public Speaking": 10,
+                        "Teamwork & Attitude": 15,
+                        "Media Sosial & Promosi": 15,
+                        "Administrasi & Data": 20,
+                        "Problem Solving & Logika Kerja": 15,
+                        "Teknologi & Digital Skill": 20
+                    },
+                    rekomendasi: "DIREKOMENDASIKAN",
+                    timestamp: Date.now() - 1800000
+                }
+            ];
+
+            try {
+                for (const applicant of defaultSample) {
+                    const docRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'applicants'));
+                    await setDoc(docRef, applicant);
+                }
+            } catch (err) {
+                console.error("Error seeding initial data:", err);
+            }
+        }
+
+        // Offline Fallback Data
+        function loadOfflineDefaultData() {
+            applicantsList = [
+                { 
+                    id: "A01", 
+                    nama: "Farhan Mahendra (Offline)", 
+                    kontak: "081288223311", 
+                    prodi: "Sistem Informasi", 
+                    nim: "2024081012", 
+                    motivasi: "Ingin berkontribusi dalam mempercepat proses administrasi pendaftaran mahasiswa baru berbasis digital.",
+                    skorTotal: 135,
+                    perKategori: {
+                        "Komunikasi & Public Speaking": 25,
+                        "Teamwork & Attitude": 20,
+                        "Media Sosial & Promosi": 20,
+                        "Administrasi & Data": 25,
+                        "Problem Solving & Logika Kerja": 20,
+                        "Teknologi & Digital Skill": 25
+                    },
+                    rekomendasi: "SANGAT DIREKOMENDASIKAN",
+                    timestamp: Date.now()
+                }
+            ];
+            calculateDashboardStats();
+            renderDashboardRadar();
+            renderApplicantsTable();
+        }
+
+        // Onload Initialize Setup
+        window.addEventListener('load', () => {
+            initFirebase();
+        });
+
+        // Tab Switching Handler
+        function switchTab(tabId) {
+            const btnForm = document.getElementById('tab-btn-form');
+            const btnSim = document.getElementById('tab-btn-sim');
+            const btnDash = document.getElementById('tab-btn-dashboard');
+            
+            const contentForm = document.getElementById('tab-content-form-creator');
+            const contentSim = document.getElementById('tab-content-simulator');
+            const contentDash = document.getElementById('tab-content-dashboard');
+
+            // Reset tab styles
+            const normalClass = "px-3.5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all text-gray-300 hover:text-white";
+            const activeClass = "px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition-all bg-blue-600 text-white shadow";
+
+            btnForm.className = normalClass;
+            btnSim.className = normalClass;
+            btnDash.className = normalClass;
+
+            contentForm.classList.add('hidden');
+            contentSim.classList.add('hidden');
+            contentDash.classList.add('hidden');
+
+            if (tabId === 'form-creator') {
+                btnForm.className = activeClass;
+                contentForm.classList.remove('hidden');
+                clearInterval(timerInterval);
+            } else if (tabId === 'simulator') {
+                btnSim.className = activeClass;
+                contentSim.classList.remove('hidden');
+            } else {
+                btnDash.className = activeClass;
+                contentDash.classList.remove('hidden');
+                clearInterval(timerInterval);
+                calculateDashboardStats();
+                renderDashboardRadar();
+            }
+        }
+
+        // Display Toast Messages
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            const bgClass = type === "success" ? "bg-emerald-600" : "bg-red-600";
+            const icon = type === "success" ? "fa-circle-check" : "fa-triangle-exclamation";
+            
+            toast.className = `${bgClass} text-white font-bold px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all transform translate-y-10 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> ${message}`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-10", "opacity-0");
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add("translate-y-10", "opacity-0");
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
+        }
+
+        // Copy Apps Script to clipboard
+        function copyAppsScript() {
+            const scriptText = document.getElementById("apps-script-box").innerText;
+            
+            const el = document.createElement('textarea');
+            el.value = scriptText;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            const copyBtnIcon = document.getElementById("copy-icon");
+            const copyBtnText = document.getElementById("copy-text");
+
+            copyBtnIcon.className = "fa-solid fa-check text-green-400";
+            copyBtnText.innerText = "Tersalin!";
+
+            showToast("Kode Apps Script berhasil disalin ke clipboard!", "success");
+
+            setTimeout(() => {
+                copyBtnIcon.className = "fa-solid fa-copy";
+                copyBtnText.innerText = "Salin Script";
+            }, 3000);
+        }
+
+        // Start Simulator Quiz Ujian
+        function startSimulator() {
+            document.getElementById("sim-welcome").classList.add("hidden");
+            document.getElementById("sim-active").classList.remove("hidden");
+            document.getElementById("sim-results-panel").classList.add("hidden");
+
+            currentSimStep = 0;
+            secondsLeft = 900; // Reset timer 15 Menit
+            
+            renderSimulatorQuestions();
+            updateSimStepView();
+            buildMiniNavigation();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishSimulatorQuiz();
+                } else {
+                    const minutes = Math.floor(secondsLeft / 60);
+                    const seconds = secondsLeft % 60;
+                    document.getElementById("quiz-timer").innerHTML = `
+                        <i class="fa-solid fa-stopwatch animate-pulse"></i> ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}
+                    `;
+                }
+            }, 1000);
+        }
+
+        // Render Simulator Questions Dynamically
+        function renderSimulatorQuestions() {
+            const container = document.getElementById("sim-questions-holder");
+            container.innerHTML = "";
+
+            for (let step = 1; step <= 6; step++) {
+                const categoryName = categories[step];
+                const sectionDiv = document.createElement("div");
+                sectionDiv.id = `sim-section-${step}`;
+                sectionDiv.className = "sim-section-block hidden bg-white rounded-2xl shadow-md p-6 md:p-8 space-y-6";
+
+                sectionDiv.innerHTML = `
+                    <div class="border-b border-gray-100 pb-4">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Kategori ${step}</span>
+                        <h2 class="text-xl font-bold text-blue-950 mt-2">${categoryName}</h2>
+                        <p class="text-gray-500 text-sm mt-1">Pilih satu jawaban yang paling tepat.</p>
+                    </div>
+                    <div class="space-y-6" id="sim-questions-step-${step}"></div>
+                `;
+
+                container.appendChild(sectionDiv);
+                const stepQuestionsContainer = document.getElementById(`sim-questions-step-${step}`);
+                const stepQuestions = quizData.filter(q => q.cat === categoryName);
+
+                stepQuestions.forEach((q) => {
+                    const qDiv = document.createElement("div");
+                    qDiv.className = "p-4 md:p-5 rounded-xl border border-gray-100 bg-gray-50/50 space-y-3";
+                    
+                    qDiv.innerHTML = `
+                        <p class="font-bold text-gray-800 text-base leading-relaxed">
+                            <span class="text-blue-950 font-black mr-1">${q.id}.</span> ${q.q}
+                        </p>
+                        <div class="grid grid-cols-1 gap-2.5 mt-2">
+                            ${q.options.map((opt, oIdx) => {
+                                const optLetter = String.fromCharCode(65 + oIdx);
+                                return `
+                                    <label class="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/20 cursor-pointer transition-all">
+                                        <input type="radio" name="q-${q.id}" value="${oIdx}" onchange="markMiniNavActive(${q.id})" class="w-4 h-4 text-blue-900 border-gray-300 focus:ring-blue-500">
+                                        <span class="text-sm font-semibold text-gray-700">
+                                            <span class="text-blue-900 font-extrabold mr-1">${optLetter}.</span> ${opt}
+                                        </span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                    stepQuestionsContainer.appendChild(qDiv);
+                });
+            }
+        }
+
+        // Form Navigation
+        function navigateSimStep(direction) {
+            if (direction === 1) {
+                if (!validateActiveSimSection()) {
+                    showToast("Harap isi/jawab seluruh kolom wajib di halaman ini sebelum melanjutkan!", "error");
+                    return;
+                }
+            }
+
+            currentSimStep += direction;
+
+            if (currentSimStep >= totalSimSteps) {
+                finishSimulatorQuiz();
+                return;
+            }
+
+            updateSimStepView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Validate Required Fields in Active Step
+        function validateActiveSimSection() {
+            const activeDiv = document.getElementById(`sim-section-${currentSimStep}`);
+            const inputs = activeDiv.querySelectorAll("input[required], textarea[required], select[required]");
+            
+            for (let input of inputs) {
+                if (!input.value.trim()) return false;
+            }
+
+            // Radio Button Validation
+            const radioGroups = {};
+            activeDiv.querySelectorAll("input[type='radio']").forEach(radio => {
+                radioGroups[radio.name] = true;
+            });
+
+            for (let groupName in radioGroups) {
+                const checked = activeDiv.querySelector(`input[name='${groupName}']:checked`);
+                if (!checked) return false;
+            }
+
+            return true;
+        }
+
+        // Update step UI progress
+        function updateSimStepView() {
+            document.querySelectorAll(".sim-section-block").forEach(block => {
+                block.classList.add("hidden");
+            });
+
+            document.getElementById(`sim-section-${currentSimStep}`).classList.remove("hidden");
+
+            const prevBtn = document.getElementById("simPrevBtn");
+            const nextBtn = document.getElementById("simNextBtn");
+
+            if (currentSimStep === 0) {
+                prevBtn.classList.add("hidden");
+            } else {
+                prevBtn.classList.remove("hidden");
+            }
+
+            if (currentSimStep === totalSimSteps - 1) {
+                nextBtn.innerHTML = `Kirim Jawaban <i class="fa-solid fa-paper-plane ml-1"></i>`;
+                nextBtn.className = "px-6 py-3 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2";
+            } else {
+                nextBtn.innerHTML = `Lanjutkan <i class="fa-solid fa-arrow-right"></i>`;
+                nextBtn.className = "px-6 py-3 bg-blue-900 hover:bg-blue-800 active:scale-95 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2";
+            }
+
+            const label = document.getElementById("sim-step-label");
+            const percentage = document.getElementById("sim-step-percentage");
+            const bar = document.getElementById("sim-progress-bar");
+
+            const pctValue = Math.round(((currentSimStep + 1) / totalSimSteps) * 100);
+            label.textContent = `Langkah ${currentSimStep + 1} dari ${totalSimSteps}: ${categories[currentSimStep]}`;
+            percentage.textContent = `${pctValue}%`;
+            bar.style.width = `${pctValue}%`;
+        }
+
+        // Mini Question Grid Navigation Builder
+        function buildMiniNavigation() {
+            const grid = document.getElementById("mini-nav-grid");
+            grid.innerHTML = "";
+
+            for (let i = 1; i <= 30; i++) {
+                const navBox = document.createElement("div");
+                navBox.id = `nav-dot-${i}`;
+                navBox.className = "aspect-square flex items-center justify-center text-xs font-bold border border-gray-200 text-gray-400 bg-gray-50 rounded-lg cursor-pointer transition-all hover:bg-gray-150";
+                navBox.innerText = i;
+                navBox.onclick = () => jumpToQuestionCategory(i);
+                grid.appendChild(navBox);
+            }
+        }
+
+        // Highlight mini navigation dot
+        function markMiniNavActive(questionId) {
+            const dot = document.getElementById(`nav-dot-${questionId}`);
+            if (dot) {
+                dot.className = "aspect-square flex items-center justify-center text-xs font-bold bg-green-500 border border-green-500 text-white rounded-lg transition-all";
+            }
+        }
+
+        // Jump to Question Category Section
+        function jumpToQuestionCategory(questionId) {
+            const targetQuestion = quizData.find(q => q.id === questionId);
+            if (targetQuestion) {
+                const targetStepIdx = categories.indexOf(targetQuestion.cat);
+                if (targetStepIdx !== -1) {
+                    currentSimStep = targetStepIdx;
+                    updateSimStepView();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+        }
+
+        // Submit and Save results to database
+        async function finishSimulatorQuiz() {
+            clearInterval(timerInterval);
+
+            let score = 0;
+            const categoryScores = {
+                "Komunikasi & Public Speaking": 0,
+                "Teamwork & Attitude": 0,
+                "Media Sosial & Promosi": 0,
+                "Administrasi & Data": 0,
+                "Problem Solving & Logika Kerja": 0,
+                "Teknologi & Digital Skill": 0
+            };
+
+            const userAnswers = {};
+
+            quizData.forEach(q => {
+                const selected = document.querySelector(`input[name='q-${q.id}']:checked`);
+                const val = selected ? parseInt(selected.value) : null;
+                userAnswers[q.id] = val;
+                if (val === q.ans) {
+                    score += 5;
+                    categoryScores[q.cat] += 5;
+                }
+            });
+
+            // Ambil data biodata
+            const nama = document.getElementById("sim-bio-nama").value.trim() || "Anonim";
+            const kontak = document.getElementById("sim-bio-kontak").value.trim() || "-";
+            const prodi = document.getElementById("sim-bio-prodi").value || "-";
+            const nim = document.getElementById("sim-bio-nim").value.trim() || "-";
+            const motivasi = document.getElementById("sim-bio-motivasi").value.trim() || "-";
+
+            // Evaluasi Status Kelulusan
+            let rekomendasi = "DIPERTIMBANGKAN";
+            if (score >= 110) {
+                rekomendasi = "SANGAT DIREKOMENDASIKAN";
+            } else if (score >= 80) {
+                rekomendasi = "DIREKOMENDASIKAN";
+            }
+
+            const newApplicant = {
+                nama,
+                kontak,
+                prodi,
+                nim,
+                motivasi,
+                skorTotal: score,
+                perKategori: categoryScores,
+                rekomendasi,
+                userAnswers: userAnswers,
+                timestamp: Date.now()
+            };
+
+            // Save to Cloud Database
+            if (db && user) {
+                try {
+                    const docRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'applicants'));
+                    await setDoc(docRef, newApplicant);
+                    showToast("Jawaban berhasil disimpan secara realtime ke Cloud Database!", "success");
+                } catch (err) {
+                    console.error("Failed storing data online, saving locally:", err);
+                    newApplicant.id = "local-" + Date.now();
+                    applicantsList.unshift(newApplicant);
+                    calculateDashboardStats();
+                    renderDashboardRadar();
+                    renderApplicantsTable();
+                }
+            } else {
+                // Offline Fallback
+                newApplicant.id = "local-" + Date.now();
+                applicantsList.unshift(newApplicant);
+                calculateDashboardStats();
+                renderDashboardRadar();
+                renderApplicantsTable();
+                showToast("Berhasil terkirim dalam mode lokal.", "success");
+            }
+
+            activeUserResults = newApplicant;
+
+            // Switch view ke Hasil Simulator
+            document.getElementById("sim-active").classList.add("hidden");
+            document.getElementById("sim-results-panel").classList.remove("hidden");
+
+            // Tampilkan Detail Biodata
+            document.getElementById("sim-res-nama").textContent = nama;
+            document.getElementById("sim-res-kontak").textContent = kontak;
+            document.getElementById("sim-res-prodi").textContent = prodi;
+            document.getElementById("sim-res-nim").textContent = nim;
+            document.getElementById("sim-final-score").textContent = score;
+
+            const badge = document.getElementById("sim-res-badge");
+            const descText = document.getElementById("sim-res-text");
+
+            if (score >= 110) {
+                badge.className = "inline-block px-4 py-2 rounded-xl text-sm font-extrabold shadow-sm bg-green-100 text-green-800 border border-green-200";
+                badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> SANGAT DIREKOMENDASIKAN`;
+                descText.textContent = "Nilai Anda luar biasa! Anda menunjukkan kompetensi administrasi, komunikasi, dan soft-skill yang sangat mumpuni.";
+            } else if (score >= 80) {
+                badge.className = "inline-block px-4 py-2 rounded-xl text-sm font-extrabold shadow-sm bg-blue-100 text-blue-800 border border-blue-200";
+                badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> DIREKOMENDASIKAN`;
+                descText.textContent = "Nilai Anda memenuhi kualifikasi dasar. Anda berpotensi besar untuk dipertimbangkan di wawancara.";
+            } else {
+                badge.className = "inline-block px-4 py-2 rounded-xl text-sm font-extrabold shadow-sm bg-red-100 text-red-800 border border-red-200";
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> DIPERTIMBANGKAN`;
+                descText.textContent = "Skor Anda berada di bawah rata-rata. Namun, panitia akan mempertimbangkan aspek motivasi serta pendukung lainnya.";
+            }
+
+            // Tampilkan Bar Kategori
+            const catContainer = document.getElementById("sim-category-bars");
+            catContainer.innerHTML = "";
+
+            const chartLabels = [];
+            const chartValues = [];
+
+            for (let cat in categoryScores) {
+                const maxCatScore = 25; 
+                const curScore = categoryScores[cat];
+                const pct = Math.round((curScore / maxCatScore) * 100);
+
+                chartLabels.push(cat);
+                chartValues.push(curScore);
+
+                let colorClass = "bg-blue-600";
+                if (pct >= 80) colorClass = "bg-green-600";
+                else if (pct < 50) colorClass = "bg-amber-500";
+
+                const barDiv = document.createElement("div");
+                barDiv.className = "space-y-1.5";
+                barDiv.innerHTML = `
+                    <div class="flex justify-between text-xs md:text-sm font-semibold">
+                        <span class="text-gray-700">${cat}</span>
+                        <span class="text-gray-900 font-bold">${curScore} / 25 Poin (${pct}%)</span>
+                    </div>
+                    <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden border border-gray-100">
+                        <div class="h-full ${colorClass} rounded-full transition-all duration-500" style="width: ${pct}%;"></div>
+                    </div>
+                `;
+                catContainer.appendChild(barDiv);
+            }
+
+            renderRadarChart(chartLabels, chartValues);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Personal Radar Chart
+        function renderRadarChart(labels, values) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels.map(l => l.split(' & ')), 
+                    datasets: [{
+                        label: 'Skor Kompetensi',
+                        data: values,
+                        backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                        borderColor: 'rgba(30, 58, 138, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(234, 179, 8, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(30, 58, 138, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 25,
+                            ticks: { stepSize: 5, display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Dashboard Radar Chart
+        function renderDashboardRadar() {
+            const chartCanvas = document.getElementById('dashboardRadarChart');
+            if (!chartCanvas) return;
+            const ctx = chartCanvas.getContext('2d');
+            
+            if (dashboardChartInstance) {
+                dashboardChartInstance.destroy();
+            }
+
+            const totalApplicants = applicantsList.length;
+            const avgCategories = {
+                "Komunikasi & Public Speaking": 0,
+                "Teamwork & Attitude": 0,
+                "Media Sosial & Promosi": 0,
+                "Administrasi & Data": 0,
+                "Problem Solving & Logika Kerja": 0,
+                "Teknologi & Digital Skill": 0
+            };
+
+            if (totalApplicants === 0) return;
+
+            applicantsList.forEach(app => {
+                for (let cat in avgCategories) {
+                    avgCategories[cat] += app.perKategori[cat] || 0;
+                }
+            });
+
+            const labels = Object.keys(avgCategories);
+            const values = labels.map(cat => (avgCategories[cat] / totalApplicants).toFixed(1));
+
+            dashboardChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels.map(l => l.split(' & ')),
+                    datasets: [{
+                        label: 'Rata-Rata Kompetensi',
+                        data: values,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                        pointBorderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 25,
+                            ticks: { stepSize: 5, display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate Dashboard statistics
+        function calculateDashboardStats() {
+            const total = applicantsList.length;
+            document.getElementById("stat-total-applicants").textContent = total;
+
+            if (total === 0) {
+                document.getElementById("stat-avg-score").textContent = "0";
+                document.getElementById("stat-pass-rate").textContent = "0%";
+                document.getElementById("stat-highest-score").textContent = "0";
+                return;
+            }
+
+            let sumScore = 0;
+            let highest = 0;
+            let totalLolos = 0;
+
+            applicantsList.forEach(app => {
+                sumScore += app.skorTotal;
+                if (app.skorTotal > highest) highest = app.skorTotal;
+                if (app.skorTotal >= 110) totalLolos++;
+            });
+
+            const avg = Math.round(sumScore / total);
+            const passRate = Math.round((totalLolos / total) * 100);
+
+            document.getElementById("stat-avg-score").textContent = avg;
+            document.getElementById("stat-pass-rate").textContent = `${passRate}%`;
+            document.getElementById("stat-highest-score").textContent = highest;
+        }
+
+        // Render Applicant List Table Rows
+        function renderApplicantsTable() {
+            const rowsContainer = document.getElementById("applicant-table-rows");
+            const searchQuery = document.getElementById("table-search").value.toLowerCase().trim();
+            rowsContainer.innerHTML = "";
+
+            const filteredList = applicantsList.filter(app => {
+                return (app.nama || "").toLowerCase().includes(searchQuery) || 
+                       (app.nim || "").toLowerCase().includes(searchQuery) ||
+                       (app.prodi || "").toLowerCase().includes(searchQuery);
+            });
+
+            if (filteredList.length === 0) {
+                rowsContainer.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-400 font-semibold">
+                            Tidak ada data pelamar yang cocok dengan pencarian Anda.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filteredList.forEach(app => {
+                let badgeClass = "";
+                if (app.rekomendasi === "SANGAT DIREKOMENDASIKAN") {
+                    badgeClass = "bg-green-100 text-green-800 border border-green-200";
+                } else if (app.rekomendasi === "DIREKOMENDASIKAN") {
+                    badgeClass = "bg-blue-100 text-blue-800 border border-blue-200";
+                } else {
+                    badgeClass = "bg-amber-100 text-amber-800 border border-amber-200";
+                }
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition-all";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-slate-900">${app.nama}</td>
+                    <td class="px-6 py-4">
+                        <span class="block text-xs font-semibold text-slate-500">${app.prodi}</span>
+                        <span class="block text-[11px] font-mono text-slate-400 mt-0.5">${app.nim}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center font-extrabold text-slate-800">${app.skorTotal} <span class="text-xs text-slate-400 font-semibold">/150</span></td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase shadow-sm ${badgeClass}">
+                            ${app.rekomendasi}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="viewApplicantDetail('${app.id || app.timestamp}')" class="bg-blue-50 text-blue-800 hover:bg-blue-100 font-bold text-xs px-3 py-1.5 rounded-lg border border-blue-100 transition-all flex items-center gap-1.5 ml-auto">
+                            <i class="fa-solid fa-expand"></i> Detail
+                        </button>
+                    </td>
+                `;
+                rowsContainer.appendChild(tr);
+            });
+        }
+
+        // View Single Applicant Detail on Modal Click
+        function viewApplicantDetail(applicantId) {
+            const app = applicantsList.find(a => (a.id === applicantId || String(a.timestamp) === String(applicantId)));
+            if (!app) return;
+
+            const modal = document.getElementById("detail-modal");
+            const body = document.getElementById("detail-modal-body");
+
+            let categorySummaryHtml = "";
+            for (let cat in app.perKategori) {
+                const max = 25;
+                const score = app.perKategori[cat];
+                const pct = Math.round((score / max) * 100);
+                let col = "bg-blue-600";
+                if (pct >= 80) col = "bg-green-600";
+                else if (pct < 50) col = "bg-amber-500";
+
+                categorySummaryHtml += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-600">${cat}</span>
+                            <span class="text-slate-900 font-bold">${score}/25 Poin (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="h-full ${col}" style="width: ${pct}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            body.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-150">
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase">Informasi Utama</h4>
+                        <div class="mt-2 space-y-1.5 text-sm">
+                            <p><span class="font-semibold text-slate-500 w-24 inline-block">Nama:</span> <span class="font-bold text-slate-800">${app.nama}</span></p>
+                            <p><span class="font-semibold text-slate-500 w-24 inline-block">Kontak / WA:</span> <span class="font-bold text-blue-900">${app.kontak}</span></p>
+                            <p><span class="font-semibold text-slate-500 w-24 inline-block">Prodi / NIM:</span> <span class="font-semibold text-slate-800">${app.prodi} (${app.nim})</span></p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase">Evaluasi Sistem</h4>
+                        <div class="mt-2 space-y-1.5 text-sm">
+                            <p><span class="font-semibold text-slate-500 w-24 inline-block">Skor Total:</span> <span class="font-extrabold text-blue-800 text-lg">${app.skorTotal} / 150</span></p>
+                            <p><span class="font-semibold text-slate-500 w-24 inline-block">Rekomendasi:</span> <span class="font-extrabold text-slate-800">${app.rekomendasi}</span></p>
+                        </div>
+                    </div>
+                    <div class="col-span-1 md:col-span-2 pt-2 border-t border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase">Esai Motivasi Pelamar</h4>
+                        <p class="text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-200 mt-2 italic leading-relaxed">
+                            "${app.motivasi}"
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-chart-column text-blue-800"></i>Performa Kompetensi</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${categorySummaryHtml}
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove("hidden");
+        }
+
+        function closeDetailModal() {
+            document.getElementById("detail-modal").classList.add("hidden");
+        }
+
+        // Reset and rebuild Simulator state
+        function resetSimulator() {
+            document.getElementById("simForm").reset();
+            document.getElementById("sim-bio-nama").value = "";
+            document.getElementById("sim-bio-kontak").value = "";
+            document.getElementById("sim-bio-prodi").value = "";
+            document.getElementById("sim-bio-nim").value = "";
+            document.getElementById("sim-bio-motivasi").value = "";
+
+            document.getElementById("sim-results-panel").classList.add("hidden");
+            document.getElementById("sim-welcome").classList.remove("hidden");
+        }
+
+        // Copy summary to clipboard
+        function copyRekapToClipboard() {
+            const rekapText = `
+REKAP DATA SELEKSI OPREC PMB UNIVERSITAS ROYAL 2026
+==================================================
+Nama Lengkap      : ${activeUserResults.nama}
+No. WhatsApp      : ${activeUserResults.kontak}
+Program Studi     : ${activeUserResults.prodi}
+Angkatan / NIM    : ${activeUserResults.nim}
+Skor Total        : ${activeUserResults.skorTotal} / 150 Poin
+Motivasi Pelamar  : "${activeUserResults.motivasi}"
+
+DETAIL SKOR PER KATEGORI:
+-------------------------
+1. Komunikasi & Public Speaking    : ${activeUserResults.perKategori["Komunikasi & Public Speaking"]} / 25 Poin
+2. Teamwork & Attitude             : ${activeUserResults.perKategori["Teamwork & Attitude"]} / 25 Poin
+3. Media Sosial & Promosi          : ${activeUserResults.perKategori["Media Sosial & Promosi"]} / 25 Poin
+4. Administrasi & Data             : ${activeUserResults.perKategori["Administrasi & Data"]} / 25 Poin
+5. Problem Solving & Logika Kerja  : ${activeUserResults.perKategori["Problem Solving & Logika Kerja"]} / 25 Poin
+6. Teknologi & Digital Skill       : ${activeUserResults.perKategori["Teknologi & Digital Skill"]} / 25 Poin
+==================================================
+Tersalin Otomatis pada: ${new Date().toLocaleString('id-ID')}
+            `;
+
+            const el = document.createElement('textarea');
+            el.value = rekapText.trim();
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showToast("Berhasil disalin ke clipboard!", "success");
+        }
+
+        // Attach event handlers to window object for access by inline html attributes
+        window.switchTab = switchTab;
+        window.startSimulator = startSimulator;
+        window.navigateSimStep = navigateSimStep;
+        window.closeDetailModal = closeDetailModal;
+        window.resetSimulator = resetSimulator;
+        window.copyRekapToClipboard = copyRekapToClipboard;
+        window.copyAppsScript = copyAppsScript;
+        window.viewApplicantDetail = viewApplicantDetail;
+        window.renderApplicantsTable = renderApplicantsTable;
+        window.markMiniNavActive = markMiniNavActive;
+        window.jumpToQuestionCategory = jumpToQuestionCategory;
+    </script>
+</body>
+</html>
